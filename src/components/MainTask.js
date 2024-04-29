@@ -189,7 +189,7 @@ const yokEvent = {
   startProcess: 0,
   // finalización de proceso
   endProcess: 0,
-  type: 'yok'
+  type: "yok",
 };
 
 const rtEvent = {
@@ -200,7 +200,7 @@ const rtEvent = {
   // cual boton se selecciono
   buttonSelected: "green",
   // seg de perdida de acuerdo a lista
-  lossTimeSecList: 0,
+  //lossTimeSecList: 0,
   // seg donde aparece el popup
   alertTime: 0,
   // seg real de perdida
@@ -211,8 +211,24 @@ const rtEvent = {
   endProcess: 0,
   // número de veces que aparece el popup
   popCount: 0,
-  type: 'rt'
+  type: "rt",
 };
+
+const zeroEvent = {
+  // sec pantalla amarilla
+  yellowScreen: 0,
+  // sec presiona boton
+  buttonPress: 0,
+  // cual boton se selecciono
+  buttonSelected: "green",
+  // puntaje actual
+  score: 0,
+  // finalización de proceso
+  endProcess: 0,
+  type: "zero",
+};
+
+const defaultQuantity = 3;
 
 function MainTask() {
   const navigate = useNavigate();
@@ -226,6 +242,7 @@ function MainTask() {
   const yokQueue = useRef([]);
   const yokRecord = useRef({ ...yokEvent });
   const rtRecord = useRef({ ...rtEvent });
+  const zeroRecord = useRef({ ...zeroEvent });
 
   useEffect(() => {
     fetchTxtFile(1, lossTimes[participantNumber]).then((array) => {
@@ -238,30 +255,37 @@ function MainTask() {
     score.current += amount;
   }, []);
 
-  const addTrial = useCallback((newTrial) => {
-    trials.current.push(newTrial);
-    // Manually trigger an update check
+  const addTrial = useCallback(
+    (newTrial) => {
+      trials.current.push(newTrial);
+      // Manually trigger an update check
 
-    if (currentMode.current === Mode.yok) {
-      yokRecord.current = { ...yokEvent };
-    } else if (currentMode.current === Mode.rt) {
-      rtRecord.current = { ...rtEvent };
-    }
+      if (currentMode.current === Mode.yok) {
+        yokRecord.current = { ...yokEvent };
+      } else if (currentMode.current === Mode.rt) {
+        rtRecord.current = { ...rtEvent };
+      }
 
-    if (
-      trials.current.length > 30 &&
-      currentMode.current !== conditionMode.current[1]
-    ) {
-      currentMode.current = conditionMode.current[1];
-    } else if (
-      trials.current.length > 60 &&
-      currentMode.current !== conditionMode.current[2]
-    ) {
-      currentMode.current = conditionMode.current[2];
-    } else if (trials.current.length === 90) {
-      navigate("/final", { state: { score: score.current } });
-    }
-  },[navigate]);
+      if (
+        trials.current.length > defaultQuantity * 10 &&
+        currentMode.current !== conditionMode.current[1]
+      ) {
+        currentMode.current = conditionMode.current[1];
+        secondsApp.current = 0;
+      } else if (
+        trials.current.length > defaultQuantity * 20 &&
+        currentMode.current !== conditionMode.current[2]
+      ) {
+        currentMode.current = conditionMode.current[2];
+        secondsApp.current = 0;
+      } else if (trials.current.length === defaultQuantity * 30) {
+        navigate("/final", {
+          state: { score: score.current, trials: trials.current },
+        });
+      }
+    },
+    [navigate]
+  );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -308,7 +332,7 @@ function MainTask() {
 
   const rt20Flow = useCallback(async () => {
     rtRecord.current.alertTime = secondsApp / 1000;
-    rtRecord.current.popCount +=  1;
+    rtRecord.current.popCount += 1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
     await new Promise((r) => setTimeout(r, 2000));
@@ -326,9 +350,12 @@ function MainTask() {
       yokRecord.current.buttonSelected = "azul";
       yokRecord.current.lossTimeSecList = yokQueue.current.pop();
       await yokedriFlow();
-    }else if(currentMode.current === Mode.rt){
+    } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
       rtRecord.current.buttonSelected = "azul";
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.buttonPress = secondsApp.current / 1000;
+      zeroRecord.current.buttonSelected = "azul";
     }
 
     setInstructionText(" ");
@@ -347,6 +374,10 @@ function MainTask() {
       rtRecord.current.score = score.current;
       rtRecord.current.endProcess = secondsApp.current / 1000;
       addTrial(rtRecord);
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.score = score.current;
+      zeroRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(rtRecord);
     }
 
     setBgColor(Colors.yellow);
@@ -356,6 +387,8 @@ function MainTask() {
       yokRecord.current.yellowScreen = secondsApp.current / 1000;
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.yellowScreen = secondsApp.current / 1000;
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.yellowScreen = secondsApp.current / 1000;
     }
   }, [addTrial, updateScore, yokedriFlow]);
 
@@ -365,9 +398,12 @@ function MainTask() {
       yokRecord.current.buttonSelected = "verde";
       yokRecord.current.lossTimeSecList = yokQueue.current.pop();
       await yokedriFlow();
-    }else if(currentMode.current === Mode.rt){
+    } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
       rtRecord.current.buttonSelected = "verde";
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.buttonPress = secondsApp.current / 1000;
+      zeroRecord.current.buttonSelected = "verde";
     }
 
     setInstructionText(" ");
@@ -386,6 +422,10 @@ function MainTask() {
       rtRecord.current.score = score.current;
       rtRecord.current.endProcess = secondsApp.current / 1000;
       addTrial(rtRecord);
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.score = score.current;
+      zeroRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(rtRecord);
     }
 
     setBgColor(Colors.yellow);
@@ -395,6 +435,8 @@ function MainTask() {
       yokRecord.current.yellowScreen = secondsApp.current / 1000;
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.yellowScreen = secondsApp.current / 1000;
+    } else if (currentMode.current === Mode.zero) {
+      zeroRecord.current.yellowScreen = secondsApp.current / 1000;
     }
   }, [addTrial, updateScore, yokedriFlow]);
 
