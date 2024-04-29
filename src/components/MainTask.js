@@ -176,7 +176,7 @@ const yokEvent = {
   // sec presiona boton
   buttonPress: 0,
   // cual boton se selecciono
-  buttonSelected: "green",
+  buttonSelected: "verde",
   // seg de perdida de acuerdo a lista
   lossTimeSecList: 0,
   // puntos acumulados por perder
@@ -184,12 +184,13 @@ const yokEvent = {
   // seg real de perdida
   lossTimeSec: 0,
   // puntaje actual
-  score:0,
+  score: 0,
   // inicio de proceso
-  startProcess:0,
+  startProcess: 0,
   // finalización de proceso
-  endProcess: 0 
-}
+  endProcess: 0,
+  type: 'yok'
+};
 
 const rtEvent = {
   // sec pantalla amarilla
@@ -205,12 +206,13 @@ const rtEvent = {
   // seg real de perdida
   lossTimeSec: 0,
   // puntaje actual
-  score:0,
+  score: 0,
   // finalización de proceso
-  endProcess: 0, 
+  endProcess: 0,
   // número de veces que aparece el popup
   popCount: 0,
-}
+  type: 'rt'
+};
 
 function MainTask() {
   const navigate = useNavigate();
@@ -222,6 +224,8 @@ function MainTask() {
   const secondsApp = useRef(0);
   const trials = useRef([]);
   const yokQueue = useRef([]);
+  const yokRecord = useRef({ ...yokEvent });
+  const rtRecord = useRef({ ...rtEvent });
 
   useEffect(() => {
     fetchTxtFile(1, lossTimes[participantNumber]).then((array) => {
@@ -234,9 +238,16 @@ function MainTask() {
     score.current += amount;
   }, []);
 
-  const addTrial = (newTrial) => {
+  const addTrial = useCallback((newTrial) => {
     trials.current.push(newTrial);
     // Manually trigger an update check
+
+    if (currentMode.current === Mode.yok) {
+      yokRecord.current = { ...yokEvent };
+    } else if (currentMode.current === Mode.rt) {
+      rtRecord.current = { ...rtEvent };
+    }
+
     if (
       trials.current.length > 30 &&
       currentMode.current !== conditionMode.current[1]
@@ -250,7 +261,7 @@ function MainTask() {
     } else if (trials.current.length === 90) {
       navigate("/final", { state: { score: score.current } });
     }
-  };
+  },[navigate]);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -258,7 +269,7 @@ function MainTask() {
       console.log("secondsApp", secondsApp.current);
       if (secondsApp.current) {
         const index = selectedTimes.indexOf(secondsApp.current / 1000);
-        if(index !== -1) {
+        if (index !== -1) {
           if (currentMode.current === Mode.rt) {
             rt20Flow();
           }
@@ -286,6 +297,8 @@ function MainTask() {
     setModalText("Acaba de activar una prueba perdera un punto");
     setModalVisible(true);
     await new Promise((r) => setTimeout(r, 2000));
+    yokRecord.current.scoreLoss = (yokQueue.length + 1) * -1;
+    yokRecord.current.lossTimeSec = secondsApp / 1000;
     updateScore(-1);
     setLossMessage("Ha perdido un punto");
     setModalVisible(false);
@@ -294,20 +307,28 @@ function MainTask() {
   }, [updateScore]);
 
   const rt20Flow = useCallback(async () => {
+    rtRecord.current.alertTime = secondsApp / 1000;
+    rtRecord.current.popCount +=  1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
     await new Promise((r) => setTimeout(r, 2000));
     updateScore(-1);
     setLossMessage("Ha perdido un punto");
     setModalVisible(false);
+    rtRecord.current.lossTimeSec = secondsApp / 1000;
     await new Promise((r) => setTimeout(r, 1000));
     setLossMessage("");
   }, [updateScore]);
 
   const handleBlueButtonClick = useCallback(async () => {
-    if (currentMode.current === Mode.yok &&  yokQueue.current.length > 0) {
-      yokQueue.current.pop();
+    if (currentMode.current === Mode.yok && yokQueue.current.length > 0) {
+      yokRecord.current.buttonPress = secondsApp.current / 1000;
+      yokRecord.current.buttonSelected = "azul";
+      yokRecord.current.lossTimeSecList = yokQueue.current.pop();
       await yokedriFlow();
+    }else if(currentMode.current === Mode.rt){
+      rtRecord.current.buttonPress = secondsApp.current / 1000;
+      rtRecord.current.buttonSelected = "azul";
     }
 
     setInstructionText(" ");
@@ -318,14 +339,35 @@ function MainTask() {
     updateScore(1);
     setBgColor(Colors.gray);
     await new Promise((r) => setTimeout(r, 16000));
+    if (currentMode.current === Mode.yok) {
+      yokRecord.current.score = score.current;
+      yokRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(yokRecord);
+    } else if (currentMode.current === Mode.rt) {
+      rtRecord.current.score = score.current;
+      rtRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(rtRecord);
+    }
+
     setBgColor(Colors.yellow);
     setShowButtons(true);
-  }, [currentMode, updateScore, yokedriFlow]);
+
+    if (currentMode.current === Mode.yok) {
+      yokRecord.current.yellowScreen = secondsApp.current / 1000;
+    } else if (currentMode.current === Mode.rt) {
+      rtRecord.current.yellowScreen = secondsApp.current / 1000;
+    }
+  }, [addTrial, updateScore, yokedriFlow]);
 
   const handleGreenButtonClick = useCallback(async () => {
     if (currentMode.current === Mode.yok && yokQueue.current.length > 0) {
-      yokQueue.current.pop();
+      yokRecord.current.buttonPress = secondsApp.current / 1000;
+      yokRecord.current.buttonSelected = "verde";
+      yokRecord.current.lossTimeSecList = yokQueue.current.pop();
       await yokedriFlow();
+    }else if(currentMode.current === Mode.rt){
+      rtRecord.current.buttonPress = secondsApp.current / 1000;
+      rtRecord.current.buttonSelected = "verde";
     }
 
     setInstructionText(" ");
@@ -336,9 +378,25 @@ function MainTask() {
     updateScore(5);
     await new Promise((r) => setTimeout(r, 2000));
     updateScore(5);
+    if (currentMode.current === Mode.yok) {
+      yokRecord.current.score = score.current;
+      yokRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(yokRecord);
+    } else if (currentMode.current === Mode.rt) {
+      rtRecord.current.score = score.current;
+      rtRecord.current.endProcess = secondsApp.current / 1000;
+      addTrial(rtRecord);
+    }
+
     setBgColor(Colors.yellow);
     setShowButtons(true);
-  }, [currentMode, updateScore, yokedriFlow]);
+
+    if (currentMode.current === Mode.yok) {
+      yokRecord.current.yellowScreen = secondsApp.current / 1000;
+    } else if (currentMode.current === Mode.rt) {
+      rtRecord.current.yellowScreen = secondsApp.current / 1000;
+    }
+  }, [addTrial, updateScore, yokedriFlow]);
 
   return (
     <Background bgColor={bgColor}>
@@ -355,14 +413,14 @@ function MainTask() {
               hoverColor="#004BA0"
               onClick={handleBlueButtonClick}
             >
-              Blue
+              Azul
             </Button>
             <Button
               color="#344D33"
               hoverColor="#4A6948"
               onClick={handleGreenButtonClick}
             >
-              Green
+              Verde
             </Button>
           </>
         ) : (
