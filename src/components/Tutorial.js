@@ -114,7 +114,7 @@ function Tutorial() {
               onClick={handleBlueButtonClick}
               disabled={isBlueDisabled}
             >
-              Blue
+              Azul
             </Button>
             <Button
               color="#344D33"
@@ -122,7 +122,7 @@ function Tutorial() {
               onClick={handleGreenButtonClick}
               disabled={isGreenDisabled}
             >
-              Green
+              Verde
             </Button>
           </>
         ) : (

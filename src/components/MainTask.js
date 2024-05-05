@@ -1,7 +1,8 @@
 import styled from "styled-components";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addUserAction } from "../redux/actions";
 
 const Background = styled.div`
   background-color: ${(props) => props.bgColor};
@@ -162,13 +163,15 @@ async function fetchTxtFile(fileId) {
   try {
     const response = await fetch(filePath);
     const text = await response.text();
-    const array = text.split("\n").map(Number);
+    const cleanedText = text.replace(/[^\d\n]/g, '');
+    const array = cleanedText.split("\n").map(Number);
     return array;
   } catch (error) {
     console.error("Error fetching file:", error);
     return [];
   }
 }
+
 
 const yokEvent = {
   // sec pantalla amarilla
@@ -228,11 +231,15 @@ const zeroEvent = {
   type: "zero",
 };
 
-const defaultQuantity = 3;
+const defaultQuantity = 0.3;
 
 function MainTask() {
   const navigate = useNavigate();
-  const participantNumber = useSelector((state) => state.currentUser.id);
+  const dispatch = useDispatch();
+  const participantNumber = useSelector((state) => { 
+    //console.log("state",state);
+    return state.user.currentUser
+   });
   const conditionMode = useRef(conditionsMode[participantNumber]);
   const [selectedTimes, setSelectedTimes] = useState([]);
   const score = useRef(0);
@@ -245,7 +252,9 @@ function MainTask() {
   const zeroRecord = useRef({ ...zeroEvent });
 
   useEffect(() => {
-    fetchTxtFile(1, lossTimes[participantNumber]).then((array) => {
+    currentMode.current = conditionMode.current[0];
+    fetchTxtFile(participantNumber, lossTimes[participantNumber]).then((array) => {
+      //console.log("array",array);
       setSelectedTimes(array);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -257,8 +266,10 @@ function MainTask() {
 
   const addTrial = useCallback(
     (newTrial) => {
-      trials.current.push(newTrial);
+      console.log("newTrial",newTrial.current);
+      trials.current.push(newTrial.current);
       // Manually trigger an update check
+      console.log("trials.current.length",trials.current.length);
 
       if (currentMode.current === Mode.yok) {
         yokRecord.current = { ...yokEvent };
@@ -267,24 +278,27 @@ function MainTask() {
       }
 
       if (
-        trials.current.length > defaultQuantity * 10 &&
+        trials.current.length === defaultQuantity * 10 &&
         currentMode.current !== conditionMode.current[1]
       ) {
         currentMode.current = conditionMode.current[1];
         secondsApp.current = 0;
       } else if (
-        trials.current.length > defaultQuantity * 20 &&
+        trials.current.length === defaultQuantity * 20 &&
         currentMode.current !== conditionMode.current[2]
       ) {
         currentMode.current = conditionMode.current[2];
         secondsApp.current = 0;
-      } else if (trials.current.length === defaultQuantity * 30) {
-        navigate("/final", {
-          state: { score: score.current, trials: trials.current },
-        });
+      } if (trials.current.length === defaultQuantity * 30) {
+        dispatch(addUserAction(trials.current));
+        setTimeout(()=>{
+          navigate("/final", {
+            state: { score: score.current, trials: trials.current },
+          });
+        },200)
       }
     },
-    [navigate]
+    [dispatch, navigate]
   );
 
   useEffect(() => {
@@ -293,6 +307,7 @@ function MainTask() {
       console.log("secondsApp", secondsApp.current);
       if (secondsApp.current) {
         const index = selectedTimes.indexOf(secondsApp.current / 1000);
+        //console.log('index',index, currentMode.current, selectedTimes);
         if (index !== -1) {
           if (currentMode.current === Mode.rt) {
             rt20Flow();
@@ -306,7 +321,7 @@ function MainTask() {
 
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedTimes]);
 
   const [bgColor, setBgColor] = useState(Colors.yellow);
   const [showButtons, setShowButtons] = useState(true);
@@ -321,8 +336,8 @@ function MainTask() {
     setModalText("Acaba de activar una prueba perdera un punto");
     setModalVisible(true);
     await new Promise((r) => setTimeout(r, 2000));
-    yokRecord.current.scoreLoss = (yokQueue.length + 1) * -1;
-    yokRecord.current.lossTimeSec = secondsApp / 1000;
+    yokRecord.current.scoreLoss = (yokQueue.current.length + 1) * -1;
+    yokRecord.current.lossTimeSec = secondsApp.current / 1000;
     updateScore(-1);
     setLossMessage("Ha perdido un punto");
     setModalVisible(false);
@@ -331,7 +346,7 @@ function MainTask() {
   }, [updateScore]);
 
   const rt20Flow = useCallback(async () => {
-    rtRecord.current.alertTime = secondsApp / 1000;
+    rtRecord.current.alertTime = secondsApp.current / 1000;
     rtRecord.current.popCount += 1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
@@ -339,7 +354,7 @@ function MainTask() {
     updateScore(-1);
     setLossMessage("Ha perdido un punto");
     setModalVisible(false);
-    rtRecord.current.lossTimeSec = secondsApp / 1000;
+    rtRecord.current.lossTimeSec = secondsApp.current / 1000;
     await new Promise((r) => setTimeout(r, 1000));
     setLossMessage("");
   }, [updateScore]);
@@ -377,7 +392,7 @@ function MainTask() {
     } else if (currentMode.current === Mode.zero) {
       zeroRecord.current.score = score.current;
       zeroRecord.current.endProcess = secondsApp.current / 1000;
-      addTrial(rtRecord);
+      addTrial(zeroRecord);
     }
 
     setBgColor(Colors.yellow);
@@ -425,7 +440,7 @@ function MainTask() {
     } else if (currentMode.current === Mode.zero) {
       zeroRecord.current.score = score.current;
       zeroRecord.current.endProcess = secondsApp.current / 1000;
-      addTrial(rtRecord);
+      addTrial(zeroRecord);
     }
 
     setBgColor(Colors.yellow);

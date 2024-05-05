@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
 import { useDispatch } from "react-redux";
 import { registerUser, setCurrentUser } from "../redux/actions";
@@ -12,6 +12,7 @@ const Container = styled.div`
   justify-content: center;
   height: 100vh;
   background-color: #f4f4f4;
+  height: 100%;
 `;
 
 const ConsentForm = styled.form`
@@ -20,10 +21,11 @@ const ConsentForm = styled.form`
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 20;
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 200px;
   padding: 8px;
   margin: 10px 0;
   border: 1px solid #ccc;
@@ -31,8 +33,8 @@ const Input = styled.input`
 `;
 
 const Button = styled.button`
-  background-color: #4caf50;
-  color: white;
+  background-color: ${props => props.disabled ? '#ccc' : '#4caf50'};
+  color: ${props => props.disabled ? 'rgba(0, 0, 0, 0.26)' : 'white'};
   padding: 10px 20px;
   margin: 20px;
   border: none;
@@ -40,50 +42,52 @@ const Button = styled.button`
   cursor: pointer;
 
   &:hover {
-    background-color: #45a049;
+    background-color: ${props => props.disabled ? '#ccc' : '#45a049'};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
   }
 `;
 
 function Consentimiento() {
-  const [name, setName] = useState("");
-  const [id, setId] = useState("");
-  const [location, setLocation] = useState("");
+  const [identification, setIdentification] = useState("");
+  const [expedition, setExpedition] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userData = location.state;
+  const loc = useLocation();
+  const userData = loc.state;
 
-  const handleAccept = () => {
-    dispatch(registerUser({ ...userData, name, id, location }));
+  const handleAccept = (e) => {
+    e.preventDefault();
+
+    dispatch(registerUser({ ...userData, identification, expedition }));
     setTimeout(() => {
       dispatch(setCurrentUser({ email: userData.email }));
       navigate("/instrucciones");
     }, 1000);
   };
 
+  const buttonStatus = !identification && !expedition;
+
   return (
     <Container>
       <ConsentForm onSubmit={handleAccept}>
         <h1>Consentimiento Informado</h1>
         <p>
-          Yo{" "}
+          Yo <b>{loc.state.fullName}</b> , identificado con documento de
+          identidad No.{" "}
           <Input
             type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Nombre completo"
-          />
-          , identificado con documento de identidad No.{" "}
-          <Input
-            type="text"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={identification}
+            onChange={(e) => setIdentification(e.target.value)}
             placeholder="Documento de identidad"
           />
           , de{" "}
           <Input
             type="text"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            value={expedition}
+            onChange={(e) => setExpedition(e.target.value)}
             placeholder="Lugar de procedencia"
           />
           , he sido invitado(a) a participar en una investigación sobre tareas
@@ -155,7 +159,7 @@ function Consentimiento() {
           del programa de psicología de la Universidad Nacional de Colombia,
           correo electrónico khenaob@unal.edu.co{" "}
         </p>
-        <Button disabled={!name && !id && !location} type="submit">
+        <Button disabled={buttonStatus} type="submit">
           Acepto Participar
         </Button>
       </ConsentForm>
