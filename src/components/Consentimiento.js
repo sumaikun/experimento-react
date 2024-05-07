@@ -113,8 +113,7 @@ function Consentimiento() {
           silencioso, póngase cómodo en el asiento, guarde silencio y procure
           concentrarse únicamente en la tarea que se le presentará a
           continuación. <br /> Usted se sentará frente a un computador y se le
-          solicitará que oprima botones o que encuentre una determinada figura
-          en una fotografía. Usted recibirá puntos dependiendo de su ejecución.
+          solicitará que oprima botones. Usted recibirá puntos dependiendo de su ejecución.
           Tenga en cuenta que, una vez empiece el experimento, los
           experimentadores no podrán ayudarle ni darle más información respecto
           a la tarea que va a realizar.

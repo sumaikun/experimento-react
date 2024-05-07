@@ -163,7 +163,7 @@ async function fetchTxtFile(fileId) {
   try {
     const response = await fetch(filePath);
     const text = await response.text();
-    const cleanedText = text.replace(/[^\d\n]/g, '');
+    const cleanedText = text.replace(/[^\d\n]/g, "");
     const array = cleanedText.split("\n").map(Number);
     return array;
   } catch (error) {
@@ -171,7 +171,6 @@ async function fetchTxtFile(fileId) {
     return [];
   }
 }
-
 
 const yokEvent = {
   // sec pantalla amarilla
@@ -236,12 +235,13 @@ const defaultQuantity = 0.3;
 function MainTask() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const participantNumber = useSelector((state) => { 
+  const participantNumber = useSelector((state) => {
     //console.log("state",state);
-    return state.user.currentUser
-   });
+    return state.user.currentUser;
+  });
   const conditionMode = useRef(conditionsMode[participantNumber]);
   const [selectedTimes, setSelectedTimes] = useState([]);
+  const [visualScore, setVisualScore] = useState(0);
   const score = useRef(0);
   const currentMode = useRef(null);
   const secondsApp = useRef(0);
@@ -253,8 +253,8 @@ function MainTask() {
 
   useEffect(() => {
     currentMode.current = conditionMode.current[0];
-    fetchTxtFile(participantNumber, lossTimes[participantNumber]).then((array) => {
-      //console.log("array",array);
+    fetchTxtFile(lossTimes[participantNumber]).then((array) => {
+      console.log("array", array);
       setSelectedTimes(array);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -266,10 +266,10 @@ function MainTask() {
 
   const addTrial = useCallback(
     (newTrial) => {
-      console.log("newTrial",newTrial.current);
+      console.log("newTrial", newTrial.current);
       trials.current.push(newTrial.current);
       // Manually trigger an update check
-      console.log("trials.current.length",trials.current.length);
+      console.log("trials.current.length", trials.current.length);
 
       if (currentMode.current === Mode.yok) {
         yokRecord.current = { ...yokEvent };
@@ -289,13 +289,14 @@ function MainTask() {
       ) {
         currentMode.current = conditionMode.current[2];
         secondsApp.current = 0;
-      } if (trials.current.length === defaultQuantity * 30) {
+      }
+      if (trials.current.length === defaultQuantity * 30) {
         dispatch(addUserAction(trials.current));
-        setTimeout(()=>{
+        setTimeout(() => {
           navigate("/final", {
             state: { score: score.current, trials: trials.current },
           });
-        },200)
+        }, 200);
       }
     },
     [dispatch, navigate]
@@ -350,13 +351,21 @@ function MainTask() {
     rtRecord.current.popCount += 1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
-    await new Promise((r) => setTimeout(r, 2000));
+    setTimeout(async () => {
+      updateScore(-1);
+      setLossMessage("Ha perdido un punto");
+      setModalVisible(false);
+      rtRecord.current.lossTimeSec = secondsApp.current / 1000;
+      await new Promise((r) => setTimeout(r, 1000));
+      setLossMessage("");
+    }, 2000);
+    /*await new Promise((r) => setTimeout(r, 2000));
     updateScore(-1);
     setLossMessage("Ha perdido un punto");
     setModalVisible(false);
     rtRecord.current.lossTimeSec = secondsApp.current / 1000;
     await new Promise((r) => setTimeout(r, 1000));
-    setLossMessage("");
+    setLossMessage("");*/
   }, [updateScore]);
 
   const handleBlueButtonClick = useCallback(async () => {
@@ -377,10 +386,44 @@ function MainTask() {
     setShowButtons(false);
     setBgColor(Colors.blue);
     updateScore(1);
-    await new Promise((r) => setTimeout(r, 2000));
-    updateScore(1);
-    setBgColor(Colors.gray);
-    await new Promise((r) => setTimeout(r, 16000));
+    setVisualScore(score.current);
+
+    const waitUntil = secondsApp.current + 2000;
+    console.log("waitUntil", waitUntil);
+    await new Promise((resolve) => {
+      const checker = setInterval(() => {
+        if (secondsApp.current === waitUntil) {
+          clearInterval(checker);
+          resolve(true);
+          updateScore(1);
+          setVisualScore(score.current);
+        }
+      }, 250);
+    });
+
+    const waitUntil2 = secondsApp.current + 2000;
+    console.log("waitUntil2", waitUntil2);
+    await new Promise((resolve) => {
+      const checker = setInterval(() => {
+        if (secondsApp.current >= waitUntil2) {
+          clearInterval(checker);
+          resolve(true);
+          setBgColor(Colors.gray);
+        }
+      }, 250);
+    });
+
+    const waitUntil3 = secondsApp.current + 16000;
+    console.log("waitUntil3", waitUntil3);
+    await new Promise((resolve) => {
+      const checker = setInterval(() => {
+        if (secondsApp.current >= waitUntil3) {
+          clearInterval(checker);
+          resolve(true);
+        }
+      }, 1000);
+    });
+
     if (currentMode.current === Mode.yok) {
       yokRecord.current.score = score.current;
       yokRecord.current.endProcess = secondsApp.current / 1000;
@@ -424,11 +467,45 @@ function MainTask() {
     setInstructionText(" ");
     setShowButtons(false);
     setBgColor(Colors.gray);
-    await new Promise((r) => setTimeout(r, 16000));
-    setBgColor(Colors.green);
-    updateScore(5);
-    await new Promise((r) => setTimeout(r, 2000));
-    updateScore(5);
+
+    const waitUntil = secondsApp.current + 16000;
+    console.log("waitUntil", waitUntil);
+    await new Promise((resolve) => {
+      const checker = setInterval(() => {
+        if (secondsApp.current === waitUntil) {
+          clearInterval(checker);
+          resolve(true);
+          setBgColor(Colors.green);
+          updateScore(5);
+          setVisualScore(score.current);
+        }
+      }, 1000);
+    });
+
+    const waitUntil2 = secondsApp.current + 2000;
+    console.log("waitUntil2", waitUntil2);
+    await new Promise((resolve) => {
+      const checker = setInterval(() => {
+        if (secondsApp.current >= waitUntil2) {
+          clearInterval(checker);
+          resolve(true);
+          updateScore(5);
+          setVisualScore(score.current);
+        }
+      }, 250);
+    });
+
+    const waitUntil3 = secondsApp.current + 2000;
+    console.log("waitUntil3", waitUntil3);
+    await new Promise((r) => {
+      const checker =  setInterval(() => {
+        if (secondsApp.current >= waitUntil3) {
+          clearInterval(checker);
+          r(true);
+        }
+      }, 250)
+    });
+
     if (currentMode.current === Mode.yok) {
       yokRecord.current.score = score.current;
       yokRecord.current.endProcess = secondsApp.current / 1000;
@@ -459,8 +536,7 @@ function MainTask() {
     <Background bgColor={bgColor}>
       <Instructions>{instructionText}</Instructions>
       <Score>
-        Puntaje: {score.current}{" "}
-        {lossMessage && <RedText>{lossMessage}</RedText>}
+        Puntaje: {visualScore} {lossMessage && <RedText>{lossMessage}</RedText>}
       </Score>
       <ButtonsContainer>
         {showButtons ? (
@@ -470,14 +546,14 @@ function MainTask() {
               hoverColor="#004BA0"
               onClick={handleBlueButtonClick}
             >
-              Azul
+              {"  "}
             </Button>
             <Button
               color="#344D33"
               hoverColor="#4A6948"
               onClick={handleGreenButtonClick}
             >
-              Verde
+              {"  "}
             </Button>
           </>
         ) : (

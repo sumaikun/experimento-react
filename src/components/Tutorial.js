@@ -78,6 +78,7 @@ function Tutorial() {
     setScore(score + 1);
     await new Promise((r) => setTimeout(r, 2000));
     setScore(score + 2);
+    await new Promise((r) => setTimeout(r, 2000));
     setBgColor(Colors.gray);
     await new Promise((r) => setTimeout(r, 16000));
     setBgColor(Colors.yellow);
@@ -114,7 +115,7 @@ function Tutorial() {
               onClick={handleBlueButtonClick}
               disabled={isBlueDisabled}
             >
-              Azul
+              {"  "}
             </Button>
             <Button
               color="#344D33"
@@ -122,7 +123,7 @@ function Tutorial() {
               onClick={handleGreenButtonClick}
               disabled={isGreenDisabled}
             >
-              Verde
+              {"  "}
             </Button>
           </>
         ) : (
