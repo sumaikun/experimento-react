@@ -336,14 +336,17 @@ function MainTask() {
   const yokedriFlow = useCallback(async () => {
     setModalText("Acaba de activar una prueba perdera un punto");
     setModalVisible(true);
-    await new Promise((r) => setTimeout(r, 2000));
-    yokRecord.current.scoreLoss = (yokQueue.current.length + 1) * -1;
-    yokRecord.current.lossTimeSec = secondsApp.current / 1000;
-    updateScore(-1);
-    setLossMessage("Ha perdido un punto");
-    setModalVisible(false);
-    await new Promise((r) => setTimeout(r, 1000));
-    setLossMessage("");
+    setTimeout(()=>{
+      yokRecord.current.scoreLoss = (yokQueue.current.length + 1) * -1;
+      yokRecord.current.lossTimeSec = secondsApp.current / 1000;
+      updateScore(-1);
+      setVisualScore(score.current);
+      setLossMessage("Ha perdido un punto");
+      setModalVisible(false);
+    },2000)
+    setTimeout(()=>{
+      setLossMessage("");
+    },1000)
   }, [updateScore]);
 
   const rt20Flow = useCallback(async () => {
@@ -353,6 +356,7 @@ function MainTask() {
     setModalVisible(true);
     setTimeout(async () => {
       updateScore(-1);
+      setVisualScore(score.current);
       setLossMessage("Ha perdido un punto");
       setModalVisible(false);
       rtRecord.current.lossTimeSec = secondsApp.current / 1000;
