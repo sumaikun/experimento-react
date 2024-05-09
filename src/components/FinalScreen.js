@@ -39,11 +39,24 @@ function FinalScreen() {
   const { trials } = location.state ?? {};
   const currentUser = useSelector((state) => {
     console.log("state",state)
-    const userId = state.user.currentUser;
-    return state.user.users.find((user) => user.id === userId);
+    return state.user.currentUser;
   });
 
   console.log('location',location);
+
+  function downloadJSON() {
+    const obj = trials;
+    const filename = "trials.json"
+    const jsonStr = JSON.stringify(obj, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = URL.createObjectURL(blob);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 
   const handleDownloadResults = () => {
     if (!trials || !Array.isArray(trials)) {
@@ -59,7 +72,6 @@ function FinalScreen() {
     let data = ``;
     data += `Puntos totales: ${score}\n\n`; // Add the score
 
-    // Iterate over all keys of the user object
     Object.keys(currentUser).forEach((key) => {
       // Exclude 'id' and 'actions' keys
       if (key !== "id" && key !== "actions") {
@@ -70,21 +82,17 @@ function FinalScreen() {
     //data +=
       //"Type,Yellow Screen,Button Press,Button Selected,Score Loss,Loss Time (Sec),Start Process,End Process\n";
 
-    // Iterate over each trial
     trials.forEach((trial) => {
-      let trialLine = `${trial.type},`; // Add the trial type at the beginning
+      let trialLine = `${trial.type},`;
 
-      // Iterate over each property of the trial object and add its value
       Object.keys(trial).forEach((key) => {
-        // Exclude the 'type' property
         if (key !== "type") {
           trialLine += `${trial[key]},`;
         }
       });
 
-      // Remove the trailing comma and add a new line character
-      trialLine = trialLine.slice(0, -1); // Remove the trailing comma
-      data += `${trialLine}\n`; // Add the trial line
+      trialLine = trialLine.slice(0, -1);
+      data += `${trialLine}\n`;
     });
 
     const blob = new Blob([data], { type: "text/plain;charset=utf-8" });
@@ -105,7 +113,7 @@ function FinalScreen() {
       <p>
         <strong>Puntos totales: {score}</strong>
       </p>
-      <Button onClick={handleDownloadResults}>Descargar Resultados</Button>
+      <Button onClick={downloadJSON}>Descargar Resultados</Button>
     </Container>
   );
 }

@@ -237,7 +237,7 @@ function MainTask() {
   const dispatch = useDispatch();
   const participantNumber = useSelector((state) => {
     //console.log("state",state);
-    return state.user.currentUser;
+    return state.user.currentUser.position;
   });
   const conditionMode = useRef(conditionsMode[participantNumber]);
   const [selectedTimes, setSelectedTimes] = useState([]);
@@ -276,6 +276,9 @@ function MainTask() {
       } else if (currentMode.current === Mode.rt) {
         rtRecord.current = { ...rtEvent };
       }
+      else if (currentMode.current === Mode.zero) {
+        zeroRecord.current = { ...zeroEvent };
+      }
 
       if (
         trials.current.length === defaultQuantity * 10 &&
@@ -307,14 +310,15 @@ function MainTask() {
       secondsApp.current += 1000;
       console.log("secondsApp", secondsApp.current);
       if (secondsApp.current) {
-        const index = selectedTimes.indexOf(secondsApp.current / 1000);
+        const indexTime = secondsApp.current / 1000
+        const index = selectedTimes.indexOf(indexTime);
         //console.log('index',index, currentMode.current, selectedTimes);
         if (index !== -1) {
           if (currentMode.current === Mode.rt) {
             rt20Flow();
           }
           if (currentMode.current === Mode.yok) {
-            yokQueue.current.unshift(secondsApp.current / 1000);
+            yokQueue.current.unshift(indexTime);
           }
         }
       }
@@ -343,10 +347,10 @@ function MainTask() {
       setVisualScore(score.current);
       setLossMessage("Ha perdido un punto");
       setModalVisible(false);
+      setTimeout(()=>{
+        setLossMessage("");
+      },1000)
     },2000)
-    setTimeout(()=>{
-      setLossMessage("");
-    },1000)
   }, [updateScore]);
 
   const rt20Flow = useCallback(async () => {
@@ -363,21 +367,16 @@ function MainTask() {
       await new Promise((r) => setTimeout(r, 1000));
       setLossMessage("");
     }, 2000);
-    /*await new Promise((r) => setTimeout(r, 2000));
-    updateScore(-1);
-    setLossMessage("Ha perdido un punto");
-    setModalVisible(false);
-    rtRecord.current.lossTimeSec = secondsApp.current / 1000;
-    await new Promise((r) => setTimeout(r, 1000));
-    setLossMessage("");*/
   }, [updateScore]);
 
   const handleBlueButtonClick = useCallback(async () => {
-    if (currentMode.current === Mode.yok && yokQueue.current.length > 0) {
+    if (currentMode.current === Mode.yok) {
       yokRecord.current.buttonPress = secondsApp.current / 1000;
       yokRecord.current.buttonSelected = "azul";
-      yokRecord.current.lossTimeSecList = yokQueue.current.pop();
-      await yokedriFlow();
+      if(yokQueue.current.length > 0){
+        yokRecord.current.lossTimeSecList = yokQueue.current.pop();
+        await yokedriFlow();
+      }  
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
       rtRecord.current.buttonSelected = "azul";
@@ -455,11 +454,13 @@ function MainTask() {
   }, [addTrial, updateScore, yokedriFlow]);
 
   const handleGreenButtonClick = useCallback(async () => {
-    if (currentMode.current === Mode.yok && yokQueue.current.length > 0) {
+    if (currentMode.current === Mode.yok) {
       yokRecord.current.buttonPress = secondsApp.current / 1000;
       yokRecord.current.buttonSelected = "verde";
-      yokRecord.current.lossTimeSecList = yokQueue.current.pop();
-      await yokedriFlow();
+      if(yokQueue.current.length > 0){
+        yokRecord.current.lossTimeSecList = yokQueue.current.pop();
+        await yokedriFlow();
+      }    
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
       rtRecord.current.buttonSelected = "verde";

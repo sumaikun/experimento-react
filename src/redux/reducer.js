@@ -17,7 +17,7 @@ const initialState = {
           return {
             ...state,
             users: [...state.users, newUser],
-            currentUser: newUser.id,
+            currentUser: newUser,
             nextUserId: + state.nextUserId + 1
           };
         }
@@ -28,7 +28,7 @@ const initialState = {
         if (existingUser) {
           return {
             ...state,
-            currentUser: existingUser.id
+            currentUser: existingUser
           };
         }
         break;

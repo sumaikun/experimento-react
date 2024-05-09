@@ -86,6 +86,19 @@ const UserRegistration = () => {
     (value) => value.trim() !== ""
   );
 
+  const handlePositionPaste = (event) => {
+    event.preventDefault();
+    const pasteContent = (event.clipboardData || window.clipboardData).getData(
+      "text"
+    );
+    const pastedValue = Number(pasteContent);
+
+    if (pastedValue >= 1 && pastedValue <= 24) {
+      event.target.value = pastedValue;
+      handleChange(event);
+    }
+  };
+
   return (
     <FormContainer>
       <Logo
@@ -141,6 +154,19 @@ const UserRegistration = () => {
             name="university"
             placeholder="Universidad"
             onChange={handleChange}
+          />
+        </InputGroup>
+
+        <InputGroup>
+          <Icon>🪑</Icon>
+          <Input
+            type="number"
+            min={1}
+            max={24}
+            name="position"
+            placeholder="Posición"
+            onChange={handleChange}
+            onPaste={handlePositionPaste}
           />
         </InputGroup>
 
