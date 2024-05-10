@@ -128,6 +128,7 @@ const lossTimes = {
   22: 15,
   23: 5,
   24: 10,
+  25: 1,
 };
 
 const conditionsMode = {
@@ -155,6 +156,7 @@ const conditionsMode = {
   22: [Mode.zero, Mode.yok, Mode.rt],
   23: [Mode.zero, Mode.yok, Mode.rt],
   24: [Mode.zero, Mode.yok, Mode.rt],
+  25: [Mode.yok, Mode.rt, Mode.zero],
 };
 
 async function fetchTxtFile(fileId) {
@@ -187,8 +189,6 @@ const yokEvent = {
   lossTimeSec: 0,
   // puntaje actual
   score: 0,
-  // inicio de proceso
-  startProcess: 0,
   // finalización de proceso
   endProcess: 0,
   type: "yok",
@@ -331,7 +331,7 @@ function MainTask() {
   const [bgColor, setBgColor] = useState(Colors.yellow);
   const [showButtons, setShowButtons] = useState(true);
 
-  const [instructionText, setInstructionText] = useState("");
+  const [instructionText, setInstructionText] = useState("Presione un botón");
   const [lossMessage, setLossMessage] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -451,6 +451,7 @@ function MainTask() {
     } else if (currentMode.current === Mode.zero) {
       zeroRecord.current.yellowScreen = secondsApp.current / 1000;
     }
+    setInstructionText("Presione un botón");
   }, [addTrial, updateScore, yokedriFlow]);
 
   const handleGreenButtonClick = useCallback(async () => {
@@ -535,6 +536,7 @@ function MainTask() {
     } else if (currentMode.current === Mode.zero) {
       zeroRecord.current.yellowScreen = secondsApp.current / 1000;
     }
+    setInstructionText("Presione un botón");
   }, [addTrial, updateScore, yokedriFlow]);
 
   return (

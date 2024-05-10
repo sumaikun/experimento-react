@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 
@@ -62,6 +62,10 @@ const Button = styled.button`
 const UserRegistration = () => {
   const navigate = useNavigate();
 
+  useEffect(()=>{
+    localStorage.removeItem("persist:root");
+  },[])
+
   const [formData, setFormData] = useState({
     fullName: "",
     gender: "",
@@ -93,7 +97,7 @@ const UserRegistration = () => {
     );
     const pastedValue = Number(pasteContent);
 
-    if (pastedValue >= 1 && pastedValue <= 24) {
+    if (pastedValue >= 1 && pastedValue <= 25) {
       event.target.value = pastedValue;
       handleChange(event);
     }
@@ -162,7 +166,7 @@ const UserRegistration = () => {
           <Input
             type="number"
             min={1}
-            max={24}
+            max={25}
             name="position"
             placeholder="Posición"
             onChange={handleChange}
