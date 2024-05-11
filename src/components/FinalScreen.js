@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -38,15 +38,22 @@ function FinalScreen() {
   const score = location.state?.score ?? 0;
   const { trials } = location.state ?? {};
   const currentUser = useSelector((state) => {
-    console.log("state",state)
+    console.log("state", state);
     return state.user.currentUser;
   });
 
-  console.log('location',location);
+  useEffect(() => {
+    window.setTimeout(() => {
+      downloadJSON();
+    }, 1500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  console.log("location", location);
 
   function downloadJSON() {
     const obj = trials;
-    const filename = "trials.json"
+    const filename = "trials.json";
     const jsonStr = JSON.stringify(obj, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
     const link = document.createElement("a");
@@ -55,8 +62,7 @@ function FinalScreen() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-}
-
+  }
 
   const handleDownloadResults = () => {
     if (!trials || !Array.isArray(trials)) {
@@ -80,7 +86,7 @@ function FinalScreen() {
     });
 
     //data +=
-      //"Type,Yellow Screen,Button Press,Button Selected,Score Loss,Loss Time (Sec),Start Process,End Process\n";
+    //"Type,Yellow Screen,Button Press,Button Selected,Score Loss,Loss Time (Sec),Start Process,End Process\n";
 
     trials.forEach((trial) => {
       let trialLine = `${trial.type},`;
@@ -109,11 +115,11 @@ function FinalScreen() {
   return (
     <Container>
       <h1>¡Felicitaciones! Ha terminado la tarea.</h1>
-      <p>Sus puntos son:</p>
+      <p></p>
       <p>
-        <strong>Puntos totales: {score}</strong>
+        <strong>Valor ganado: ${score * 10}</strong>
       </p>
-      <Button onClick={downloadJSON}>Descargar Resultados</Button>
+      {/*<Button onClick={downloadJSON}>Descargar Resultados</Button>*/}
     </Container>
   );
 }
