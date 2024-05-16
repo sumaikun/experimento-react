@@ -230,7 +230,7 @@ const zeroEvent = {
   type: "zero",
 };
 
-const defaultQuantity = 0.3;
+const defaultQuantity = 3;
 
 function MainTask() {
   const navigate = useNavigate();
@@ -363,7 +363,9 @@ function MainTask() {
       setVisualScore(score.current);
       setLossMessage("Ha perdido un punto");
       setModalVisible(false);
-      rtRecord.current.lossTimeSec = secondsApp.current / 1000;
+      if(rtRecord.current.popCount > 0){
+        rtRecord.current.lossTimeSec = secondsApp.current / 1000;
+      }
       await new Promise((r) => setTimeout(r, 1000));
       setLossMessage("");
     }, 2000);
