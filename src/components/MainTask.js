@@ -358,14 +358,15 @@ function MainTask() {
     rtRecord.current.popCount += 1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
+    rtRecord.current.lossTimeSec = +rtRecord.current.alertTime + 2;
     setTimeout(async () => {
       updateScore(-1);
       setVisualScore(score.current);
       setLossMessage("Ha perdido un punto");
       setModalVisible(false);
-      if(rtRecord.current.popCount > 0){
+      /*if(rtRecord.current.popCount > 0){
         rtRecord.current.lossTimeSec = secondsApp.current / 1000;
-      }
+      }*/
       await new Promise((r) => setTimeout(r, 1000));
       setLossMessage("");
     }, 2000);
