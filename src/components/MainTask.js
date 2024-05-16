@@ -358,7 +358,9 @@ function MainTask() {
     rtRecord.current.popCount += 1;
     setModalText("Se acabó el tiempo perdera un punto");
     setModalVisible(true);
+    // It's always +2 so why to create errors with the timeout
     rtRecord.current.lossTimeSec = +rtRecord.current.alertTime + 2;
+    
     setTimeout(async () => {
       updateScore(-1);
       setVisualScore(score.current);
