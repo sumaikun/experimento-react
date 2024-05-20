@@ -7,6 +7,7 @@ const initialState = {
   const userReducer = (state = initialState, action) => {
     switch (action.type) {
       case 'REGISTER_USER':
+        console.log('action',action)
         const emailExists = state.users.some(user => user.email === action.payload.email);
         if (!emailExists) {
           const newUser = {

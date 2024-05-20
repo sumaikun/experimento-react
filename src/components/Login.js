@@ -72,6 +72,7 @@ const UserRegistration = () => {
     age: "",
     email: "",
     university: "",
+    position: "",
   });
 
   const handleChange = (e) => {
@@ -97,7 +98,7 @@ const UserRegistration = () => {
     );
     const pastedValue = Number(pasteContent);
 
-    if (pastedValue >= 1 && pastedValue <= 25) {
+    if (pastedValue >= 1 && pastedValue <= 50) {
       event.target.value = pastedValue;
       handleChange(event);
     }

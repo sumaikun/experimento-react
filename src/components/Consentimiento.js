@@ -57,7 +57,9 @@ function Consentimiento() {
   const dispatch = useDispatch();
   const loc = useLocation();
   const userData = loc.state;
-
+  
+  console.log("userData",userData);
+  
   const handleAccept = (e) => {
     e.preventDefault();
 

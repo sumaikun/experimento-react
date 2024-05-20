@@ -230,13 +230,13 @@ const zeroEvent = {
   type: "zero",
 };
 
-const defaultQuantity = 3;
+const defaultQuantity = 0.3;
 
 function MainTask() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const participantNumber = useSelector((state) => {
-    //console.log("state",state);
+    console.log("state",state);
     return state.user.currentUser.position;
   });
   const conditionMode = useRef(conditionsMode[participantNumber]);
