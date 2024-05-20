@@ -52,7 +52,7 @@ function FinalScreen() {
   console.log("location", location);
 
   function downloadJSON() {
-    const obj = trials;
+    const obj = { currentUser, trials};
     const filename = "trials.json";
     const jsonStr = JSON.stringify(obj, null, 2);
     const blob = new Blob([jsonStr], { type: "application/json" });
