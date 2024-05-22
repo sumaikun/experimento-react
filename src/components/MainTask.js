@@ -236,7 +236,7 @@ function MainTask() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const participantNumber = useSelector((state) => {
-    console.log("state",state);
+    //console.log("state",state);
     return state.user.currentUser.position;
   });
   const conditionMode = useRef(conditionsMode[participantNumber]);
@@ -337,12 +337,13 @@ function MainTask() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalText, setModalText] = useState("");
 
-  const yokedriFlow = useCallback(async () => {
+  const yokedriFlow = useCallback(async (pressedSecond) => {
     setModalText("Acaba de activar una prueba perdera un punto");
     setModalVisible(true);
     setTimeout(()=>{
       yokRecord.current.scoreLoss = (yokQueue.current.length + 1) * -1;
-      yokRecord.current.lossTimeSec = secondsApp.current / 1000;
+      //yokRecord.current.lossTimeSec = secondsApp.current / 1000;
+      yokRecord.current.lossTimeSec = pressedSecond + 2;
       updateScore(-1);
       setVisualScore(score.current);
       setLossMessage("Ha perdido un punto");
@@ -380,7 +381,7 @@ function MainTask() {
       yokRecord.current.buttonSelected = "azul";
       if(yokQueue.current.length > 0){
         yokRecord.current.lossTimeSecList = yokQueue.current.pop();
-        await yokedriFlow();
+        await yokedriFlow(yokRecord.current.buttonPress);
       }  
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
@@ -465,7 +466,7 @@ function MainTask() {
       yokRecord.current.buttonSelected = "verde";
       if(yokQueue.current.length > 0){
         yokRecord.current.lossTimeSecList = yokQueue.current.pop();
-        await yokedriFlow();
+        await yokedriFlow(yokRecord.current.buttonPress);
       }    
     } else if (currentMode.current === Mode.rt) {
       rtRecord.current.buttonPress = secondsApp.current / 1000;
