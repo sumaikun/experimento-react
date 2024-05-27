@@ -230,7 +230,7 @@ const zeroEvent = {
   type: "zero",
 };
 
-const defaultQuantity = 0.3;
+const defaultQuantity = 3;
 
 function MainTask() {
   const navigate = useNavigate();
